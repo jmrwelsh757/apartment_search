@@ -156,6 +156,195 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(geometry) <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span>viewport) <span class="sc">%&gt;%</span> <span class="fu">unnest</span>(location) <span class="co">#%&gt;%  </span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># st_as_sf(coords = c("lat","lng"), crs = st_crs(3857))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="apt_doc_files/figure-html/map_places-1.png" class="img-fluid" width="768"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate distance to work address</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>work_loc <span class="ot">=</span> <span class="st">"1101 Market Street Chattanooga, Tennessee 37405"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>candidates_2 <span class="ot">=</span> candidates <span class="sc">%&gt;%</span> </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  rowwise <span class="sc">%&gt;%</span> </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dist_to_work =</span> <span class="fu">mapdist</span>(<span class="at">from =</span> vicinity, <span class="at">to =</span> work_loc, <span class="at">mode =</span> <span class="st">"driving"</span>, <span class="at">output =</span> <span class="st">"simple"</span>)) <span class="sc">%&gt;%</span> <span class="fu">unnest</span>(dist_to_work)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(candidates_2 <span class="sc">%&gt;%</span> </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>               <span class="fu">arrange</span>(minutes) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>               <span class="fu">mutate</span>(<span class="at">minutes =</span> scales<span class="sc">::</span><span class="fu">number</span>(minutes,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                                               <span class="at">accuracy =</span> <span class="fl">0.1</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                                               <span class="at">suffix =</span> <span class="st">" minutes driving"</span>),</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                      <span class="at">miles =</span> scales<span class="sc">::</span><span class="fu">number</span>(miles,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">accuracy =</span> <span class="fl">0.1</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">suffix =</span> <span class="st">" miles"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>               <span class="fu">select</span>(name, </span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                      rating,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>                      <span class="at">address =</span> from, </span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>                      <span class="at">distance_to_work =</span> miles,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>                      <span class="at">time_to_work =</span> minutes))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 5%">
+<col style="width: 28%">
+<col style="width: 13%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">name</th>
+<th style="text-align: right;">rating</th>
+<th style="text-align: left;">address</th>
+<th style="text-align: left;">distance_to_work</th>
+<th style="text-align: left;">time_to_work</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">1400 Chestnut Apartments</td>
+<td style="text-align: right;">4.4</td>
+<td style="text-align: left;">1400 Chestnut St, Chattanooga</td>
+<td style="text-align: left;">0.4 miles</td>
+<td style="text-align: left;">2.4 minutes driving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Bailey Avenue Apartments</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: left;">1801 Bailey Ave, Chattanooga</td>
+<td style="text-align: left;">2.2 miles</td>
+<td style="text-align: left;">6.3 minutes driving</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">The Stovall Apartments by Callio Properties</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: left;">1711 Commerce St, Chattanooga</td>
+<td style="text-align: left;">2.1 miles</td>
+<td style="text-align: left;">6.5 minutes driving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Midvale Heights Apartments</td>
+<td style="text-align: right;">4.2</td>
+<td style="text-align: left;">300 W Midvale Ave, Chattanooga</td>
+<td style="text-align: left;">4.1 miles</td>
+<td style="text-align: left;">8.9 minutes driving</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Germantown Garden Apartment Homes</td>
+<td style="text-align: right;">3.5</td>
+<td style="text-align: left;">730 S Germantown Cir, East Ridge</td>
+<td style="text-align: left;">5.5 miles</td>
+<td style="text-align: left;">10.1 minutes driving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Northshore Flats Apartments</td>
+<td style="text-align: right;">3.5</td>
+<td style="text-align: left;">3001 Dayton Blvd, Chattanooga</td>
+<td style="text-align: left;">5.3 miles</td>
+<td style="text-align: left;">10.1 minutes driving</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Glenwood Heights Apartments</td>
+<td style="text-align: right;">5.0</td>
+<td style="text-align: left;">2516 Judson Ln, Chattanooga</td>
+<td style="text-align: left;">4.0 miles</td>
+<td style="text-align: left;">11.9 minutes driving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Park Ridge Apartments</td>
+<td style="text-align: right;">3.8</td>
+<td style="text-align: left;">728 Frawley Rd, Chattanooga</td>
+<td style="text-align: left;">9.2 miles</td>
+<td style="text-align: left;">13.8 minutes driving</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">East Ridge Village Apartments</td>
+<td style="text-align: right;">3.0</td>
+<td style="text-align: left;">5322 Clemons Rd, East Ridge</td>
+<td style="text-align: left;">7.9 miles</td>
+<td style="text-align: left;">14.1 minutes driving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Amberleigh Ridge</td>
+<td style="text-align: right;">4.5</td>
+<td style="text-align: left;">7205 Aventine Way, Chattanooga</td>
+<td style="text-align: left;">10.3 miles</td>
+<td style="text-align: left;">15.7 minutes driving</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Dogwood Place</td>
+<td style="text-align: right;">3.4</td>
+<td style="text-align: left;">201 Eads St, East Ridge</td>
+<td style="text-align: left;">10.1 miles</td>
+<td style="text-align: left;">16.3 minutes driving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Integra Vistas Apartments</td>
+<td style="text-align: right;">4.7</td>
+<td style="text-align: left;">151 Integra Vistas Dr, Hixson</td>
+<td style="text-align: left;">14.3 miles</td>
+<td style="text-align: left;">17.2 minutes driving</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Parc 1346</td>
+<td style="text-align: right;">4.1</td>
+<td style="text-align: left;">1346 Gunbarrel Rd, Chattanooga</td>
+<td style="text-align: left;">10.8 miles</td>
+<td style="text-align: left;">17.6 minutes driving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ashford Villas Apartment Homes</td>
+<td style="text-align: right;">3.9</td>
+<td style="text-align: left;">2209 Ashford Villa Cir, Chattanooga</td>
+<td style="text-align: left;">12.6 miles</td>
+<td style="text-align: left;">17.7 minutes driving</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Northtowne Village Apartments</td>
+<td style="text-align: right;">3.8</td>
+<td style="text-align: left;">1011 Gadd Rd, Hixson</td>
+<td style="text-align: left;">8.5 miles</td>
+<td style="text-align: left;">18.0 minutes driving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Reserve at Creekside</td>
+<td style="text-align: right;">3.9</td>
+<td style="text-align: left;">1340 Reserve Way, Chattanooga</td>
+<td style="text-align: left;">11.2 miles</td>
+<td style="text-align: left;">18.0 minutes driving</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Forest Hill Villas Apartment Homes</td>
+<td style="text-align: right;">4.5</td>
+<td style="text-align: left;">2530 Forest Villa Cir, Chattanooga</td>
+<td style="text-align: left;">12.9 miles</td>
+<td style="text-align: left;">18.3 minutes driving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Country Oaks Apartments</td>
+<td style="text-align: right;">3.3</td>
+<td style="text-align: left;">137 Oyler Ln, Hixson</td>
+<td style="text-align: left;">15.3 miles</td>
+<td style="text-align: left;">18.8 minutes driving</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Arbor Hill Apartments</td>
+<td style="text-align: right;">2.0</td>
+<td style="text-align: left;">5307 TN-58, Chattanooga</td>
+<td style="text-align: left;">11.4 miles</td>
+<td style="text-align: left;">19.7 minutes driving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">The Haven At Commons Park Apartments</td>
+<td style="text-align: right;">3.8</td>
+<td style="text-align: left;">7477 Commons Blvd, Chattanooga</td>
+<td style="text-align: left;">12.9 miles</td>
+<td style="text-align: left;">19.9 minutes driving</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 
 </main>
 <!-- /main column -->

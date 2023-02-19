@@ -49,3 +49,50 @@ candidates = apts$results %>%
   # st_as_sf(coords = c("lat","lng"), crs = st_crs(3857))
 
 ```
+
+```{r map_places, echo = FALSE, fig.height=9, fig.width=8, warning=FALSE, message=FALSE}
+loc_map = get_map(location = c(lon = geo_loc$lon, lat = geo_loc$lat), maptype = "roadmap", zoom = 10)
+
+map_1 = ggmap(loc_map) + 
+  geom_point(data = candidates, 
+          aes(x = lng, y = lat, color = rating),
+          size = 4) + 
+  geom_label_repel(data = candidates, 
+             aes(x = lng, y = lat, label = name),
+             size = 3,
+             force_pull = 0,
+             force = 1,
+             max.overlaps = Inf) +
+  labs(x = NULL,
+       y = NULL) +
+  theme(axis.text = element_blank(),
+        legend.position = "top") +
+  guides(color=guide_legend(title.position="top"))
+
+map_1
+```
+
+```{r dist_to_work, message=FALSE}
+
+# calculate distance to work address
+work_loc = "1101 Market Street Chattanooga, Tennessee 37405"
+
+candidates_2 = candidates %>% 
+  rowwise %>% 
+  mutate(dist_to_work = mapdist(from = vicinity, to = work_loc, mode = "driving", output = "simple")) %>% unnest(dist_to_work)
+
+knitr::kable(candidates_2 %>% 
+               arrange(minutes) %>% 
+               mutate(minutes = scales::number(minutes,
+                                               accuracy = 0.1,
+                                               suffix = " minutes driving"),
+                      miles = scales::number(miles,
+                                             accuracy = 0.1,
+                                             suffix = " miles")) %>% 
+               select(name, 
+                      rating,
+                      address = from, 
+                      distance_to_work = miles,
+                      time_to_work = minutes))
+
+```
