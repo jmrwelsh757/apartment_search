@@ -1,0 +1,51 @@
+---
+title: "Apartment Search"
+author: "Joseph Welsh"
+format: html
+---
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggmap)
+ggmap::register_google(key = Sys.getenv("GOOGLE_API"))
+library(ggrepel)
+library(glue)
+library(tidyverse)
+library(jsonlite)
+
+```
+
+
+
+
+
+
+```{r place_query, warning=FALSE, message=FALSE}
+
+# determine search area
+radius = 20000 # 20 km 
+
+search_location = "Chattanooga Tennessee"
+
+geo_loc = geocode(search_location)
+
+# build inputs
+place = "apartment"
+type = "textquery"
+api = Sys.getenv("GOOGLE_API")
+
+# GET this URL
+url = glue("https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword={place}&location={geo_loc$lat}%2C{geo_loc$lon}&radius={radius}&key={api}")
+
+url
+
+apts = fromJSON(url)
+
+# read results and clean to sf output
+candidates = apts$results %>% 
+  filter(business_status == "OPERATIONAL") %>% 
+  select(name, vicinity, rating, geometry) %>% 
+  unnest(geometry) %>% select(-viewport) %>% unnest(location) #%>%  
+  # st_as_sf(coords = c("lat","lng"), crs = st_crs(3857))
+
+```
